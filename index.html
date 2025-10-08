@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruthLens - AI Content Detector</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles and Animations -->
+    <style>
+        :root {
+            --primary: #000000;
+            --secondary: #ffffff;
+            --accent: #404040;
+            --light: #f5f5f5;
+            --dark: #0a0a0a;
+            --gray: #737373;
+            --gray-light: #d4d4d4;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--secondary);
+            color: var(--primary);
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Hero section gradient and glow animation */
+        .gradient-dark {
+            background: linear-gradient(135deg, #000000 0%, #262626 100%);
+        }
+
+        .subtle-glow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+            animation: pulse-glow 6s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+        
+        /* Custom file input styling */
+        .custom-file-upload {
+            border: 2px dashed #d4d4d4;
+            display: inline-block;
+            padding: 2rem 1.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            width: 100%;
+            background-color: #fafafa;
+        }
+
+        .custom-file-upload:hover {
+            border-color: #000;
+            background-color: #f0f0f0;
+        }
+
+        /* 1. Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* 2. Micro-Interactions */
+        /* Button hover effects */
+        .btn-micro {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-micro::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-micro:hover::before {
+            left: 100%;
+        }
+
+        /* Form input animations */
+        .input-animate {
+            transition: all 0.3s ease;
+        }
+
+        .input-animate:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Loading animations */
+        .loading-dots {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        .loading-dots div {
+            position: absolute;
+            top: 33px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #000;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        .loading-dots div:nth-child(1) {
+            left: 8px;
+            animation: loading-dots1 0.6s infinite;
+        }
+        .loading-dots div:nth-child(2) {
+            left: 8px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        .loading-dots div:nth-child(3) {
+            left: 32px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        .loading-dots div:nth-child(4) {
+            left: 56px;
+            animation: loading-dots3 0.6s infinite;
+        }
+        @keyframes loading-dots1 {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        @keyframes loading-dots3 {
+            0% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+        @keyframes loading-dots2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(24px, 0); }
+        }
+
+        /* 3. Parallax Scrolling */
+        .parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* 4. CSS Transitions and Transforms */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .menu-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #000;
+            transition: width 0.3s ease;
+        }
+
+        .menu-item:hover::after {
+            width: 100%;
+        }
+
+        /* 5. SVG Animations */
+        .svg-draw {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 3s ease-in-out forwards;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .logo-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* 6. Particle Animations */
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            animation: float-particle 15s infinite linear;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 7. Page Transitions */
+        .page-transition {
+            animation: pageFadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 8. Scroll-Based Animations */
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(to right, #000, #404040);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 1.5s ease-in-out;
+        }
+
+        /* Floating animation */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .floating {
+            animation: float 5s ease-in-out infinite;
+        }
+
+        /* Button pulse effect */
+        .btn-pulse {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-pulse::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-pulse:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #000;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* FAQ rotation */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+
+        /* Staggered animation delays */
+        .stagger-1 { transition-delay: 0.1s; }
+        .stagger-2 { transition-delay: 0.2s; }
+        .stagger-3 { transition-delay: 0.3s; }
+        .stagger-4 { transition-delay: 0.4s; }
+        .stagger-5 { transition-delay: 0.5s; }
+        .stagger-6 { transition-delay: 0.6s; }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Particle Background -->
+    <div id="particles-background" class="particles-container"></div>
+
+    <!-- Header for sub-pages -->
+    <header id="page-header" class="hidden bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 transition-all duration-300 page-transition">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-black flex items-center logo-pulse" onclick="showPage('landing-page')">
+                <svg class="w-8 h-8 mr-2" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" stroke="#000" stroke-width="3" fill="none" class="svg-draw"/>
+                    <path d="M30,30 L70,70 M70,30 L30,70" stroke="#000" stroke-width="3" class="svg-draw" style="animation-delay: 0.5s"/>
+                </svg>
+                TruthLens
+            </a>
+            <button onclick="showPage('landing-page')" class="text-gray-600 hover:text-black transition-colors flex items-center btn-micro">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Home
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Landing Page View -->
+        <div id="landing-page" class="page-transition">
+            <!-- Hero Section -->
+            <section class="relative overflow-hidden gradient-dark text-white min-h-screen flex items-center justify-center py-20 px-4 parallax" style="background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')">
+                <div class="subtle-glow"></div>
+                <div class="absolute top-10 right-10 w-20 h-20 rounded-full bg-white/10 blur-xl floating"></div>
+                <div class="absolute bottom-20 left-10 w-16 h-16 rounded-full bg-white/10 blur-xl floating" style="animation-delay: 2s;"></div>
+                
+                <div class="relative z-10 text-center max-w-4xl mx-auto">
+                    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 fade-in">TruthLens</h1>
+                    <p class="text-2xl md:text-3xl text-gray-300 mb-6 fade-in stagger-1">See the truth behind every pixel, frame, and word.</p>
+                    <p class="text-lg text-gray-400 max-w-2xl mx-auto mb-10 fade-in stagger-2">
+                        TruthLens helps you verify whether a text, image, or video was generated by AI or created by a human. Get instant analysis with one click.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in stagger-3">
+                        <a href="#check-section" class="bg-white text-black hover:bg-gray-100 font-bold py-3 px-8 rounded-full transition-all duration-300 hover:scale-105 shadow-lg btn-pulse btn-micro">
+                            Get Started
+                        </a>
+                        <a href="#about" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-bold py-3 px-8 rounded-full transition-all duration-300 hover:scale-105 border border-white/20 btn-micro">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Scroll indicator -->
+                <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                    <div class="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+                        <div class="w-1 h-3 bg-white/70 rounded-full mt-2 animate-bounce"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Check Section -->
+            <section id="check-section" class="py-20 sm:py-28 bg-white">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                    <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl fade-in">Choose What You Want to Analyze</h2>
+                    <p class="mt-6 text-lg leading-8 text-gray-600 fade-in stagger-1">Select a content type to check whether it's AI-generated or human-made.</p>
+                    <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Text Checker Card -->
+                        <div class="feature-card card-hover fade-in stagger-1">
+                            <div class="p-8">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold text-black">Text Checker</h3>
+                                <p class="mt-4 text-gray-600">Paste your text and discover if it was written by AI or a human.</p>
+                                <button onclick="showPage('text-checker-page')" class="mt-8 bg-black hover:bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 btn-micro">
+                                    Check Text
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Image Checker Card -->
+                        <div class="feature-card card-hover fade-in stagger-2">
+                            <div class="p-8">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold text-black">Image Checker</h3>
+                                <p class="mt-4 text-gray-600">Upload an image to see if it's AI-generated or real.</p>
+                                <button onclick="showPage('image-checker-page')" class="mt-8 bg-black hover:bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 btn-micro">
+                                    Check Image
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Video Checker Card -->
+                        <div class="feature-card card-hover fade-in stagger-3">
+                            <div class="p-8">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold text-black">Video Checker</h3>
+                                <p class="mt-4 text-gray-600">Paste a video link or upload a file to detect possible AI or deepfakes.</p>
+                                <button onclick="showPage('video-checker-page')" class="mt-8 bg-black hover:bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 btn-micro">
+                                    Check Video
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section id="how-it-works" class="py-20 sm:py-28 bg-gray-50">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div class="text-center fade-in">
+                        <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">How TruthLens Works</h2>
+                        <p class="mt-6 text-lg leading-8 text-gray-600">Our advanced AI detection process in three simple steps</p>
+                    </div>
+                    
+                    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Step 1 -->
+                        <div class="text-center fade-in stagger-1">
+                            <div class="w-20 h-20 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-6 relative card-hover">
+                                <span class="text-2xl font-bold text-black">1</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-black">Upload Content</h3>
+                            <p class="mt-4 text-gray-600">Simply paste your text, upload an image, or provide a video link</p>
+                        </div>
+                        
+                        <!-- Step 2 -->
+                        <div class="text-center fade-in stagger-2">
+                            <div class="w-20 h-20 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-6 relative card-hover">
+                                <span class="text-2xl font-bold text-black">2</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-black">AI Analysis</h3>
+                            <p class="mt-4 text-gray-600">Our algorithms analyze patterns, artifacts, and digital fingerprints</p>
+                        </div>
+                        
+                        <!-- Step 3 -->
+                        <div class="text-center fade-in stagger-3">
+                            <div class="w-20 h-20 rounded-full bg-white border border-gray-200 flex items-center justify-center mx-auto mb-6 relative card-hover">
+                                <span class="text-2xl font-bold text-black">3</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-black">Get Results</h3>
+                            <p class="mt-4 text-gray-600">Receive detailed analysis with confidence scores and explanations</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="py-20 sm:py-28 bg-black text-white parallax" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                        <div class="fade-in stagger-1">
+                            <div class="text-4xl md:text-5xl font-bold mb-2" id="stat-1">0%</div>
+                            <div class="text-gray-300">Accuracy Rate</div>
+                        </div>
+                        <div class="fade-in stagger-2">
+                            <div class="text-4xl md:text-5xl font-bold mb-2" id="stat-2">0</div>
+                            <div class="text-gray-300">Content Analyzed</div>
+                        </div>
+                        <div class="fade-in stagger-3">
+                            <div class="text-4xl md:text-5xl font-bold mb-2" id="stat-3">0ms</div>
+                            <div class="text-gray-300">Average Analysis Time</div>
+                        </div>
+                        <div class="fade-in stagger-4">
+                            <div class="text-4xl md:text-5xl font-bold mb-2" id="stat-4">0%</div>
+                            <div class="text-gray-300">User Satisfaction</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Use Cases Section -->
+            <section class="py-20 sm:py-28 bg-white">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div class="text-center fade-in">
+                        <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">Who Uses TruthLens?</h2>
+                        <p class="mt-6 text-lg leading-8 text-gray-600">Trusted by professionals across various industries</p>
+                    </div>
+                    
+                    <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Journalists -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow fade-in card-hover stagger-1">
+                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9m0 0v12m0 0h6m-6 0h6"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-black">Journalists</h3>
+                            <p class="mt-2 text-gray-600 text-sm">Verify sources and detect manipulated media before publishing</p>
+                        </div>
+                        
+                        <!-- Educators -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow fade-in card-hover stagger-2">
+                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" opacity="0.5"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v6l9-5M12 20l-9-5"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-black">Educators</h3>
+                            <p class="mt-2 text-gray-600 text-sm">Identify AI-generated student submissions and academic work</p>
+                        </div>
+                        
+                        <!-- Legal Professionals -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow fade-in card-hover stagger-3">
+                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-black">Legal Professionals</h3>
+                            <p class="mt-2 text-gray-600 text-sm">Authenticate digital evidence and detect forged documentation</p>
+                        </div>
+                        
+                        <!-- Social Media Managers -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow fade-in card-hover stagger-4">
+                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-black">Social Media Managers</h3>
+                            <p class="mt-2 text-gray-600 text-sm">Monitor brand mentions and identify coordinated inauthentic behavior</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Technology Section -->
+            <section class="py-20 sm:py-28 bg-gray-50">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div class="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
+                        <div class="fade-in">
+                            <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">Advanced Detection Technology</h2>
+                            <p class="mt-6 text-lg leading-8 text-gray-600">
+                                TruthLens combines multiple AI approaches to deliver the most accurate content authentication available.
+                            </p>
+                            <ul class="mt-8 space-y-4">
+                                <li class="flex items-start fade-in stagger-1">
+                                    <svg class="w-6 h-6 text-black mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Pattern recognition algorithms trained on millions of samples</span>
+                                </li>
+                                <li class="flex items-start fade-in stagger-2">
+                                    <svg class="w-6 h-6 text-black mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Digital fingerprint analysis for image and video authentication</span>
+                                </li>
+                                <li class="flex items-start fade-in stagger-3">
+                                    <svg class="w-6 h-6 text-black mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Natural language processing for text authenticity detection</span>
+                                </li>
+                                <li class="flex items-start fade-in stagger-4">
+                                    <svg class="w-6 h-6 text-black mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-gray-600">Continuous learning from new AI generation techniques</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-10 lg:mt-0 fade-in stagger-1">
+                            <div class="bg-white rounded-2xl p-8 border border-gray-200 card-hover">
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="text-center p-4 bg-gray-50 rounded-xl card-hover">
+                                        <div class="text-2xl font-bold text-black">95%</div>
+                                        <div class="text-sm text-gray-600 mt-1">Text Accuracy</div>
+                                    </div>
+                                    <div class="text-center p-4 bg-gray-50 rounded-xl card-hover">
+                                        <div class="text-2xl font-bold text-black">92%</div>
+                                        <div class="text-sm text-gray-600 mt-1">Image Accuracy</div>
+                                    </div>
+                                    <div class="text-center p-4 bg-gray-50 rounded-xl card-hover">
+                                        <div class="text-2xl font-bold text-black">89%</div>
+                                        <div class="text-sm text-gray-600 mt-1">Video Accuracy</div>
+                                    </div>
+                                    <div class="text-center p-4 bg-gray-50 rounded-xl card-hover">
+                                        <div class="text-2xl font-bold text-black">&lt;2s</div>
+                                        <div class="text-sm text-gray-600 mt-1">Avg. Response</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section class="py-20 sm:py-28 bg-white">
+                <div class="max-w-4xl mx-auto px-6 lg:px-8">
+                    <div class="text-center fade-in">
+                        <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl">Frequently Asked Questions</h2>
+                        <p class="mt-6 text-lg leading-8 text-gray-600">Get answers to common questions about TruthLens</p>
+                    </div>
+                    
+                    <div class="mt-16 space-y-8">
+                        <!-- FAQ Item 1 -->
+                        <div class="bg-gray-50 rounded-2xl p-6 fade-in stagger-1 card-hover">
+                            <button class="flex justify-between items-center w-full text-left menu-item" onclick="toggleFAQ(1)">
+                                <h3 class="text-lg font-semibold text-black">How accurate is TruthLens?</h3>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq-icon-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <div class="mt-4 text-gray-600 hidden" id="faq-content-1">
+                                <p>TruthLens achieves over 95% accuracy in detecting AI-generated content across text, images, and videos. Our models are continuously trained on the latest AI generation techniques to maintain high detection rates.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ Item 2 -->
+                        <div class="bg-gray-50 rounded-2xl p-6 fade-in stagger-2 card-hover">
+                            <button class="flex justify-between items-center w-full text-left menu-item" onclick="toggleFAQ(2)">
+                                <h3 class="text-lg font-semibold text-black">What types of content can I analyze?</h3>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq-icon-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <div class="mt-4 text-gray-600 hidden" id="faq-content-2">
+                                <p>You can analyze text content (articles, essays, social media posts), images (JPEG, PNG, WebP), and videos (MP4, MOV, AVI). We support most common file formats up to 100MB in size.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ Item 3 -->
+                        <div class="bg-gray-50 rounded-2xl p-6 fade-in stagger-3 card-hover">
+                            <button class="flex justify-between items-center w-full text-left menu-item" onclick="toggleFAQ(3)">
+                                <h3 class="text-lg font-semibold text-black">Is my data secure and private?</h3>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq-icon-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <div class="mt-4 text-gray-600 hidden" id="faq-content-3">
+                                <p>Yes, we take data privacy seriously. All uploaded content is encrypted in transit and at rest. We do not store your files longer than necessary for analysis, and we never share your data with third parties.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ Item 4 -->
+                        <div class="bg-gray-50 rounded-2xl p-6 fade-in stagger-4 card-hover">
+                            <button class="flex justify-between items-center w-full text-left menu-item" onclick="toggleFAQ(4)">
+                                <h3 class="text-lg font-semibold text-black">Can I use TruthLens for commercial purposes?</h3>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq-icon-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                            <div class="mt-4 text-gray-600 hidden" id="faq-content-4">
+                                <p>Absolutely! We offer enterprise plans with API access, batch processing, and dedicated support for commercial use cases. Contact our sales team for custom pricing and implementation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Newsletter Section -->
+            <section class="py-20 sm:py-28 bg-black text-white parallax" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')">
+                <div class="max-w-3xl mx-auto px-6 lg:px-8 text-center">
+                    <div class="fade-in">
+                        <h2 class="text-4xl font-bold tracking-tight sm:text-5xl">Stay Updated</h2>
+                        <p class="mt-6 text-lg leading-8 text-gray-300">
+                            Get the latest updates on AI detection technology and new features
+                        </p>
+                    </div>
+                    <div class="mt-10 max-w-md mx-auto fade-in stagger-1">
+                        <form class="flex flex-col sm:flex-row gap-4" onsubmit="event.preventDefault(); subscribeNewsletter();">
+                            <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-3 border border-gray-600 bg-gray-900 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-white transition input-animate" required>
+                            <button type="submit" class="bg-white text-black hover:bg-gray-200 font-semibold py-3 px-6 rounded-lg transition-colors btn-micro">
+                                Subscribe
+                            </button>
+                        </form>
+                        <p class="mt-4 text-sm text-gray-400">We respect your privacy. Unsubscribe at any time.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about" class="py-20 sm:py-28 bg-gray-50">
+                 <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+                     <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl fade-in">About TruthLens</h2>
+                     <p class="mt-6 text-lg leading-8 text-gray-600 fade-in stagger-1">
+                        TruthLens uses AI models trained on real and synthetic datasets to help you detect AI-generated content across text, images, and videos. This landing page is a simple front-end prototype to showcase the user flow.
+                     </p>
+                 </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="py-20 sm:py-28 bg-white">
+                <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+                    <h2 class="text-4xl font-bold tracking-tight text-black sm:text-5xl fade-in">Ready to Uncover the Truth?</h2>
+                    <p class="mt-6 text-lg leading-8 text-gray-600 fade-in stagger-1">Start analyzing your content today with TruthLens.</p>
+                    <div class="mt-10 fade-in stagger-2">
+                        <a href="#check-section" class="bg-black text-white hover:bg-gray-800 font-bold py-3 px-8 rounded-full transition-all duration-300 hover:scale-105 shadow-lg btn-pulse btn-micro inline-flex items-center">
+                            Try It Now
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="bg-black text-gray-400">
+                <div class="max-w-7xl mx-auto py-12 px-6 lg:px-8">
+                    <div class="md:flex md:justify-between md:items-center">
+                        <div class="mb-8 md:mb-0 text-center md:text-left">
+                            <a href="#" class="text-2xl font-bold text-white flex items-center justify-center md:justify-start logo-pulse">
+                                <svg class="w-8 h-8 mr-2" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" stroke="#fff" stroke-width="3" fill="none" class="svg-draw"/>
+                                    <path d="M30,30 L70,70 M70,30 L30,70" stroke="#fff" stroke-width="3" class="svg-draw" style="animation-delay: 0.5s"/>
+                                </svg>
+                                TruthLens
+                            </a>
+                            <p class="mt-2">See the Truth Behind Every Pixel</p>
+                        </div>
+                        <div class="flex justify-center space-x-6">
+                            <a href="#" class="hover:text-white transition-colors menu-item">Home</a>
+                            <a href="#about" class="hover:text-white transition-colors menu-item">About</a>
+                            <a href="#" class="hover:text-white transition-colors menu-item">Contact</a>
+                        </div>
+                    </div>
+                    <div class="mt-8 border-t border-gray-800 pt-8 md:flex md:items-center md:justify-between">
+                        <div class="flex justify-center space-x-6 md:order-2">
+                           <a href="#" class="hover:text-white transition-transform duration-300 hover:scale-110">
+                               <span class="sr-only">Twitter</span>
+                               <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
+                           </a>
+                           <a href="#" class="hover:text-white transition-transform duration-300 hover:scale-110">
+                               <span class="sr-only">GitHub</span>
+                               <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd"/></svg>
+                           </a>
+                        </div>
+                        <p class="mt-8 text-center text-sm md:mt-0 md:order-1">&copy; 2025 TruthLens. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Text Checker Page View -->
+        <div id="text-checker-page" class="hidden min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 page-transition">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center fade-in">
+                    <h2 class="text-3xl font-bold tracking-tight text-black sm:text-4xl">Text Checker</h2>
+                    <p class="mt-4 text-lg text-gray-600">Paste your text below to check if it's AI-generated or human-written.</p>
+                </div>
+                <div class="mt-12 bg-white p-8 rounded-2xl border border-gray-200 fade-in stagger-1 card-hover">
+                    <form onsubmit="event.preventDefault(); analyzeContent('text');">
+                        <textarea id="text-input" rows="10" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition input-animate" placeholder="Paste your text to analyze..."></textarea>
+                        <div class="mt-6 text-center">
+                            <button type="submit" id="text-analyze-btn" class="w-full sm:w-auto bg-black hover:bg-gray-800 text-white font-bold py-3 px-10 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center mx-auto btn-micro">
+                                <span id="text-btn-text">Analyze Text</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="text-results" class="mt-8 hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 card-hover">
+                        <h3 class="text-xl font-bold text-black mb-4">Analysis Results</h3>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">Human-written probability</span>
+                                <span class="text-gray-700 font-medium" id="human-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="human-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-900"></div>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">AI-generated probability</span>
+                                <span class="text-gray-700 font-medium" id="ai-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="ai-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-500 to-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+                            <p class="text-gray-700" id="text-analysis-message">Based on our analysis, this text appears to be...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Checker Page View -->
+        <div id="image-checker-page" class="hidden min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 page-transition">
+             <div class="max-w-3xl mx-auto">
+                <div class="text-center fade-in">
+                    <h2 class="text-3xl font-bold tracking-tight text-black sm:text-4xl">Image Checker</h2>
+                    <p class="mt-4 text-lg text-gray-600">Upload an image to check if it's AI-generated or real.</p>
+                </div>
+                <div class="mt-12 bg-white p-8 rounded-2xl border border-gray-200 fade-in stagger-1 card-hover">
+                    <form onsubmit="event.preventDefault(); analyzeContent('image');">
+                        <label for="image-upload" class="custom-file-upload card-hover">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                            <span class="mt-2 block font-semibold">Upload an Image</span>
+                            <span class="mt-1 block text-sm" id="image-filename">or drag and drop</span>
+                        </label>
+                        <input id="image-upload" name="image-upload" type="file" class="sr-only" accept="image/*">
+
+                        <div class="mt-6 text-center">
+                            <button type="submit" id="image-analyze-btn" class="w-full sm:w-auto bg-black hover:bg-gray-800 text-white font-bold py-3 px-10 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center mx-auto btn-micro">
+                                <span id="image-btn-text">Analyze Image</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Image Preview -->
+                <div id="image-preview" class="mt-8 hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 card-hover">
+                        <h3 class="text-xl font-bold text-black mb-4">Image Preview</h3>
+                        <div class="flex justify-center">
+                            <img id="preview-image" src="" alt="Preview" class="max-h-64 rounded-lg shadow-md">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="image-results" class="mt-8 hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 card-hover">
+                        <h3 class="text-xl font-bold text-black mb-4">Analysis Results</h3>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">Real image probability</span>
+                                <span class="text-gray-700 font-medium" id="real-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="real-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-900"></div>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">AI-generated probability</span>
+                                <span class="text-gray-700 font-medium" id="ai-image-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="ai-image-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-500 to-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+                            <p class="text-gray-700" id="image-analysis-message">Based on our analysis, this image appears to be...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Checker Page View -->
+        <div id="video-checker-page" class="hidden min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 page-transition">
+             <div class="max-w-3xl mx-auto">
+                <div class="text-center fade-in">
+                    <h2 class="text-3xl font-bold tracking-tight text-black sm:text-4xl">Video Checker</h2>
+                    <p class="mt-4 text-lg text-gray-600">Upload or paste a video link to detect AI-generated or deepfake videos.</p>
+                </div>
+                <div class="mt-12 bg-white p-8 rounded-2xl border border-gray-200 fade-in stagger-1 card-hover">
+                    <form onsubmit="event.preventDefault(); analyzeContent('video');" class="space-y-6">
+                        <div>
+                            <label for="video-url" class="block text-sm font-medium text-gray-700">Video URL</label>
+                            <input type="text" id="video-url" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition input-animate" placeholder="Paste video link...">
+                        </div>
+
+                        <div class="relative">
+                           <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                               <div class="w-full border-t border-gray-300"></div>
+                           </div>
+                           <div class="relative flex justify-center">
+                               <span class="bg-white px-2 text-sm text-gray-500">OR</span>
+                           </div>
+                        </div>
+
+                        <div>
+                            <label for="video-upload" class="custom-file-upload card-hover">
+                                <span class="font-semibold">Upload a Video</span>
+                                <span class="mt-1 block text-sm" id="video-filename">Max file size: 50MB</span>
+                            </label>
+                            <input id="video-upload" name="video-upload" type="file" class="sr-only" accept="video/*">
+                        </div>
+                        
+                        <div class="pt-2 text-center">
+                            <button type="submit" id="video-analyze-btn" class="w-full sm:w-auto bg-black hover:bg-gray-800 text-white font-bold py-3 px-10 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center mx-auto btn-micro">
+                                <span id="video-btn-text">Analyze Video</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="video-results" class="mt-8 hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 card-hover">
+                        <h3 class="text-xl font-bold text-black mb-4">Analysis Results</h3>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">Authentic video probability</span>
+                                <span class="text-gray-700 font-medium" id="authentic-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="authentic-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-900"></div>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-700">AI/Deepfake probability</span>
+                                <span class="text-gray-700 font-medium" id="deepfake-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="deepfake-bar" class="progress-bar h-2.5 rounded-full bg-gradient-to-r from-gray-500 to-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+                            <p class="text-gray-700" id="video-analysis-message">Based on our analysis, this video appears to be...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Demo Message Modal -->
+    <div id="demo-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all duration-300 scale-95 opacity-0 card-hover" id="modal-content">
+            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-black">Demo Only</h3>
+            <p class="mt-4 text-gray-600">This is a frontend demo. Backend AI analysis not yet implemented.</p>
+            <button onclick="hideDemoMessage()" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-black font-bold py-2 px-4 rounded-lg transition-colors btn-micro">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const pages = ['landing-page', 'text-checker-page', 'image-checker-page', 'video-checker-page'];
+        const pageHeader = document.getElementById('page-header');
+        const modal = document.getElementById('demo-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        // Function to switch between pages
+        function showPage(pageId) {
+            // 7. Page Transitions - Add loading animation
+            document.body.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                window.scrollTo(0, 0); // Scroll to top on page change
+                pages.forEach(id => {
+                    const pageElement = document.getElementById(id);
+                    if (pageElement) {
+                        pageElement.classList.add('hidden');
+                    }
+                });
+
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                    // Reset animations for the new page
+                    setTimeout(() => {
+                        initAnimations();
+                        document.body.style.opacity = '1';
+                    }, 100);
+                }
+                
+                // Show/hide the simplified header for sub-pages
+                if (pageId === 'landing-page') {
+                    pageHeader.classList.add('hidden');
+                } else {
+                    pageHeader.classList.remove('hidden');
+                }
+            }, 300);
+        }
+
+        // 6. Particle Animations
+        function createParticles() {
+            const container = document.getElementById('particles-background');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 5 + 2;
+                const posX = Math.random() * 100;
+                const delay = Math.random() * 15;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize animations on page load
+        function initAnimations() {
+            // 1. Scroll Animations
+            const elements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right, .scale-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            elements.forEach(el => {
+                observer.observe(el);
+            });
+
+            // Initialize statistics animation when in viewport
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateStatistics();
+                        statsObserver.unobserve(entry.target);
+                    }
+                });
+            });
+            
+            const statsSection = document.querySelector('.bg-black.text-white');
+            if (statsSection) {
+                statsObserver.observe(statsSection);
+            }
+        }
+
+        // Animated statistics counter
+        function animateStatistics() {
+            const stats = [
+                { id: 'stat-1', target: 95, suffix: '%' },
+                { id: 'stat-2', target: 12500, suffix: '+' },
+                { id: 'stat-3', target: 850, suffix: 'ms' },
+                { id: 'stat-4', target: 98, suffix: '%' }
+            ];
+            
+            stats.forEach(stat => {
+                const element = document.getElementById(stat.id);
+                if (element) {
+                    let current = 0;
+                    const increment = stat.target / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= stat.target) {
+                            current = stat.target;
+                            clearInterval(timer);
+                        }
+                        element.textContent = Math.floor(current) + stat.suffix;
+                    }, 40);
+                }
+            });
+        }
+
+        // FAQ toggle functionality
+        function toggleFAQ(index) {
+            const content = document.getElementById('faq-content-' + index);
+            const icon = document.getElementById('faq-icon-' + index);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // Newsletter subscription
+        function subscribeNewsletter() {
+            // In a real application, you would send this to your backend
+            showDemoMessage(); // Using existing demo modal for now
+        }
+
+        // --- Demo Modal Logic ---
+        function showDemoMessage() {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10); // Short delay to allow CSS transition
+        }
+
+        function hideDemoMessage() {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // Wait for transition to finish
+        }
+
+        // Close modal on outside click
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                hideDemoMessage();
+            }
+        });
+
+        // --- File Input UI Logic ---
+        const imageUpload = document.getElementById('image-upload');
+        const imageFilename = document.getElementById('image-filename');
+        if (imageUpload) {
+            imageUpload.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    imageFilename.textContent = this.files[0].name;
+                    
+                    // Show image preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('preview-image').src = e.target.result;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    imageFilename.textContent = 'or drag and drop';
+                    document.getElementById('image-preview').classList.add('hidden');
+                }
+            });
+        }
+        
+        const videoUpload = document.getElementById('video-upload');
+        const videoFilename = document.getElementById('video-filename');
+        if(videoUpload){
+             videoUpload.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    videoFilename.textContent = this.files[0].name;
+                } else {
+                    videoFilename.textContent = 'Max file size: 50MB';
+                }
+            });
+        }
+
+        // --- Analysis Simulation ---
+        function analyzeContent(type) {
+            const analyzeBtn = document.getElementById(`${type}-analyze-btn`);
+            const btnText = document.getElementById(`${type}-btn-text`);
+            
+            // Show loading state with custom animation
+            analyzeBtn.disabled = true;
+            btnText.innerHTML = '<div class="loading-dots"><div></div><div></div><div></div><div></div></div>Analyzing...';
+            
+            // Simulate analysis delay
+            setTimeout(() => {
+                // Reset button
+                analyzeBtn.disabled = false;
+                btnText.textContent = `Analyze ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                
+                // Show results with animation
+                const results = document.getElementById(`${type}-results`);
+                results.classList.remove('hidden');
+                
+                // Animate progress bars
+                setTimeout(() => {
+                    // Generate random results for demo
+                    const humanProb = Math.floor(Math.random() * 40) + 30;
+                    const aiProb = 100 - humanProb;
+                    
+                    if (type === 'text') {
+                        document.getElementById('human-percent').textContent = `${humanProb}%`;
+                        document.getElementById('ai-percent').textContent = `${aiProb}%`;
+                        document.getElementById('human-bar').style.width = `${humanProb}%`;
+                        document.getElementById('ai-bar').style.width = `${aiProb}%`;
+                        
+                        const message = humanProb > 50 ? 
+                            'likely written by a human.' : 
+                            'likely generated by AI.';
+                        document.getElementById('text-analysis-message').textContent = 
+                            `Based on our analysis, this text appears to be ${message}`;
+                    } 
+                    else if (type === 'image') {
+                        document.getElementById('real-percent').textContent = `${humanProb}%`;
+                        document.getElementById('ai-image-percent').textContent = `${aiProb}%`;
+                        document.getElementById('real-bar').style.width = `${humanProb}%`;
+                        document.getElementById('ai-image-bar').style.width = `${aiProb}%`;
+                        
+                        const message = humanProb > 50 ? 
+                            'a real photograph.' : 
+                            'AI-generated.';
+                        document.getElementById('image-analysis-message').textContent = 
+                            `Based on our analysis, this image appears to be ${message}`;
+                    }
+                    else if (type === 'video') {
+                        document.getElementById('authentic-percent').textContent = `${humanProb}%`;
+                        document.getElementById('deepfake-percent').textContent = `${aiProb}%`;
+                        document.getElementById('authentic-bar').style.width = `${humanProb}%`;
+                        document.getElementById('deepfake-bar').style.width = `${aiProb}%`;
+                        
+                        const message = humanProb > 50 ? 
+                            'an authentic video.' : 
+                            'AI-generated or manipulated.';
+                        document.getElementById('video-analysis-message').textContent = 
+                            `Based on our analysis, this video appears to be ${message}`;
+                    }
+                }, 100);
+            }, 2000); // 2 second delay to simulate analysis
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initAnimations();
+        });
+    </script>
+</body>
+</html>
